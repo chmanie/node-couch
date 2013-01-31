@@ -5,12 +5,12 @@ request = require('request');
 
 getKeyString = function(key) {
   var keystr, squotes;
-  if (typeof options.key === 'string') {
+  if (typeof key === 'string') {
     squotes = '%22';
   } else {
     squotes = '';
   }
-  return keystr = '?key=' + squotes + options.key + squotes;
+  return keystr = '?key=' + squotes + key + squotes;
 };
 
 Couch = (function() {
