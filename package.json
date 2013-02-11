@@ -5,7 +5,7 @@
     "couchdb",
     "simple"
   ],
-  "version": "0.4.2",
+  "version": "0.4.3",
   "author": {
     "name": "Christian Maniewski",
     "email": "chmanie@gmail.com"
@@ -21,7 +21,7 @@
     "request"
   ],
   "readmeFilename": "README.md",
-  "_id": "node-couch@0.3.1",
+  "_id": "node-couch@0.4.2",
   "_from": "node-couch",
   "readme": "# node-couch\n\nSimple couchDB library for node.js."
 }
