@@ -173,19 +173,11 @@ Couch = (function() {
     return attach;
   };
 
-  Couch.prototype.saveAttachment = function(docid, fileStream, fileName, callback) {
-    var headopts, headreq, self;
-    fileStream.pause();
-    headopts = {
-      hostname: this.hostname,
-      port: parseInt(this.port),
-      path: '/' + this.db + '/' + docid,
-      method: 'HEAD'
-    };
+  Couch.prototype.saveAttachment = function(options, callback) {
+    var doPutRequest, headopts, headreq, self;
     self = this;
-    headreq = http.request(headopts, function(headres) {
-      var putopts, putreq, rev;
-      rev = headres.headers.etag.slice(1, headres.headers.etag.length - 1);
+    doPutRequest = function(docid, rev, fileStream, fileName, cb) {
+      var putopts, putreq;
       putopts = {
         hostname: self.hostname,
         port: parseInt(self.port),
@@ -195,15 +187,38 @@ Couch = (function() {
           'Content-Type': mime.lookup(fileName)
         }
       };
-      console.log(JSON.stringify(putopts));
       putreq = http.request(putopts);
-      fileStream.resume();
       fileStream.pipe(putreq);
       return fileStream.on('end', function() {
-        return callback(null, 'OK');
+        return cb(null, 'OK');
       });
-    });
-    return headreq.end();
+    };
+    if (options.rev != null) {
+      return doPutRequest(options.docid, options.rev, options.fileStream, options.fileName, function(err, msg) {
+        if (!err) {
+          return callback(null, msg);
+        }
+      });
+    } else {
+      options.fileStream.pause();
+      headopts = {
+        hostname: this.hostname,
+        port: parseInt(this.port),
+        path: '/' + this.db + '/' + options.docid,
+        method: 'HEAD'
+      };
+      headreq = http.request(headopts, function(headres) {
+        var rev;
+        rev = headres.headers.etag.slice(1, headres.headers.etag.length - 1);
+        options.fileStream.resume();
+        return doPutRequest(options.docid, rev, options.fileStream, options.fileName, function(err, msg) {
+          if (!err) {
+            return callback(null, msg);
+          }
+        });
+      });
+      return headreq.end();
+    }
   };
 
   return Couch;
