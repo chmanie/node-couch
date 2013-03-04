@@ -15,10 +15,12 @@
   ],
   "main": "./node-couch",
   "dependencies": {
-    "request": "~2.12.0"
+    "request": "~2.12.0",
+    "mime": "1.2.9"
   },
   "bundleDependencies": [
-    "request"
+    "request",
+    "mime"
   ],
   "readmeFilename": "README.md",
   "_id": "node-couch@0.4.2",

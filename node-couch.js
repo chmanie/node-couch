@@ -13,7 +13,7 @@ parseParams = function(params) {
   paramString = '';
   for (key in params) {
     value = params[key];
-    if (typeof value === 'string') {
+    if (typeof value === 'string' && (key.localeCompare('key') === 0 || key.localeCompare('startkey') === 0 || key.localeCompare('endkey') === 0)) {
       squotes = '%22';
     } else {
       squotes = '';
@@ -70,7 +70,7 @@ Couch = (function() {
           return callback(null, body.rows);
         }
       } else {
-        return callback('could not connect to database!');
+        return callback('could not connect to database - ' + err);
       }
     });
   };

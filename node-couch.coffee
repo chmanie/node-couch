@@ -1,6 +1,5 @@
-#rereduces ??
-#do the error callbacks really work??
-#get rid of request library
+#TODO rereduces ??
+#TODO do the error callbacks really work??
 
 request = require 'request'
 mime = require 'mime'
@@ -10,7 +9,7 @@ parseParams = (params) ->
   i = 0
   paramString = ''
   for key, value of params
-    if typeof(value) == 'string'
+    if typeof(value) == 'string' and (key.localeCompare('key') == 0 or key.localeCompare('startkey') == 0 or key.localeCompare('endkey') == 0)
       squotes = '%22'
     else
       squotes = ''
@@ -18,6 +17,7 @@ parseParams = (params) ->
       delimiter = '?'
     else
       delimiter = '&'
+    # TODO +=
     paramString = paramString + delimiter + key + '=' + squotes + value + squotes
     i++
   return paramString
@@ -51,9 +51,10 @@ class Couch
           else
             callback null, body.rows
         else
-          callback 'could not connect to database!'
+          callback 'could not connect to database - ' + err
 
   list: (options, callback) ->
+    # TODO: list params take no surrounding "" for strings
     if options.params?
       paramstr = parseParams(options.params)
     else paramstr = ''
@@ -165,7 +166,6 @@ class Couch
         )
       )
       headreq.end()
-    
 
 
 module.exports = Couch
