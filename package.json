@@ -5,7 +5,7 @@
     "couchdb",
     "simple"
   ],
-  "version": "0.4.3",
+  "version": "0.4.4",
   "author": {
     "name": "Christian Maniewski",
     "email": "chmanie@gmail.com"
@@ -13,7 +13,7 @@
   "engines": [
     "node >= 0.3.6"
   ],
-  "main": "./node-couch",
+  "main": "./build/node-couch",
   "dependencies": {
     "request": "~2.12.0",
     "mime": "1.2.9"
@@ -23,7 +23,7 @@
     "mime"
   ],
   "readmeFilename": "README.md",
-  "_id": "node-couch@0.4.2",
+  "_id": "node-couch@0.4.4",
   "_from": "node-couch",
   "readme": "# node-couch\n\nSimple couchDB library for node.js."
 }
