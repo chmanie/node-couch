@@ -138,11 +138,15 @@ class Couch
         method: 'PUT'
         headers:
           'Content-Type': mime.lookup(fileName)
-      putreq = http.request(putopts) # TODO: throw error if rev check fails
-      fileStream.pipe(putreq)
-      fileStream.on('end', () ->
-        cb null, 'OK'
-      )
+      # TODO : throw error if rev check fails
+      putReq = http.request putopts, (res) ->
+        res.setEncoding 'utf8' 
+        res.on 'data', (chunk) ->
+          if JSON.parse(chunk).rev?
+            putReq.end()
+            cb null, chunk
+
+      fileStream.pipe(putReq)
 
     if options.rev?
       doPutRequest(options.docid, options.rev, options.fileStream, options.fileName, (err, msg) ->
