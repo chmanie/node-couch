@@ -142,9 +142,10 @@ class Couch
       putReq = http.request putopts, (res) ->
         res.setEncoding 'utf8' 
         res.on 'data', (chunk) ->
-          if JSON.parse(chunk).rev?
+          putRes = JSON.parse(chunk)
+          if putRes.rev?
             putReq.end()
-            cb null, chunk
+            cb null, putRes
 
       fileStream.pipe(putReq)
 

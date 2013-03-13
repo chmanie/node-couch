@@ -190,9 +190,11 @@ Couch = (function() {
       putReq = http.request(putopts, function(res) {
         res.setEncoding('utf8');
         return res.on('data', function(chunk) {
-          if (JSON.parse(chunk).rev != null) {
+          var putRes;
+          putRes = JSON.parse(chunk);
+          if (putRes.rev != null) {
             putReq.end();
-            return cb(null, chunk);
+            return cb(null, putRes);
           }
         });
       });
