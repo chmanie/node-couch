@@ -25,7 +25,28 @@ parseParams = (params) ->
 
 class Couch
   constructor: (@hostname, @port, @db, @design) ->
-    @dbroot = 'http://' + @hostname + ':' + @port + '/' + @db
+    @couchroot = 'http://' + @hostname + ':' + @port
+    @dbroot = @couchroot + '/' + @db
+
+  greet: (callback) ->
+    request
+      url: @couchroot + '/'
+      method: 'GET'
+      (err, res, body) ->
+        if !err
+          callback null, JSON.parse(res.body)
+        else
+          callback err
+
+  listDBs: (callback) ->
+    request
+      url: @couchroot + '/_all_dbs'
+      method: 'GET'
+      (err, res, body) ->
+        if !err
+          callback null, JSON.parse(res.body)
+        else
+          callback err
 
   head: (docid, callback) ->
     request
@@ -33,13 +54,20 @@ class Couch
       method: 'HEAD'
       (err, res, body) ->
         if !err
-          console.log('HEAD:' + JSON.stringify(res.headers))
           callback null, res.headers
+        else
+          callback err
 
   view: (options, callback) ->
-    if options.params?
-      paramstr = parseParams(options.params)
-    else paramstr = ''
+    # handle view as string without params
+    if typeof(options) == 'string'
+      options = 
+        view: options
+      paramstr = ''
+    else
+      if options.params?
+        paramstr = parseParams(options.params)
+      else paramstr = ''
     request 
       url: @dbroot + '/_design/' + @design + '/_view/' + options.view + paramstr
       method: 'GET'
@@ -47,11 +75,12 @@ class Couch
       (err, res, body) ->
         if !err
           if body.error?
-            callback body
+            err = new Error body.error
+            callback err
           else
             callback null, body.rows
         else
-          callback 'could not connect to database - ' + err
+          callback err
 
   list: (options, callback) ->
     # TODO: list params take no surrounding "" for strings
