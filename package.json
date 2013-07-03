@@ -1,11 +1,11 @@
 {
   "name": "node-couch",
-  "description": "Simple couchDB library for node.js.",
+  "description": "DO NOT DOWNLOAD. NOT MAINTANED AND OLD. Simple couchDB library for node.js.",
   "tags": [
     "couchdb",
     "simple"
   ],
-  "version": "0.4.6",
+  "version": "0.5.0",
   "author": {
     "name": "Christian Maniewski",
     "email": "chmanie@gmail.com"
@@ -23,7 +23,7 @@
     "mime"
   ],
   "readmeFilename": "README.md",
-  "_id": "node-couch@0.4.4",
+  "_id": "node-couch@0.5.0",
   "_from": "node-couch",
-  "readme": "# node-couch\n\nSimple couchDB library for node.js."
+  "readme": "# node-couch\n\nSimple couchDB library for node.js. DO NOT DOWNLOAD. NOT MAINTANED AND OLD."
 }

@@ -25,28 +25,7 @@ parseParams = (params) ->
 
 class Couch
   constructor: (@hostname, @port, @db, @design) ->
-    @couchroot = 'http://' + @hostname + ':' + @port
-    @dbroot = @couchroot + '/' + @db
-
-  greet: (callback) ->
-    request
-      url: @couchroot + '/'
-      method: 'GET'
-      (err, res, body) ->
-        if !err
-          callback null, JSON.parse(res.body)
-        else
-          callback err
-
-  listDBs: (callback) ->
-    request
-      url: @couchroot + '/_all_dbs'
-      method: 'GET'
-      (err, res, body) ->
-        if !err
-          callback null, JSON.parse(res.body)
-        else
-          callback err
+    @dbroot = 'http://' + @hostname + ':' + @port + '/' + @db
 
   head: (docid, callback) ->
     request
@@ -54,20 +33,13 @@ class Couch
       method: 'HEAD'
       (err, res, body) ->
         if !err
+          console.log('HEAD:' + JSON.stringify(res.headers))
           callback null, res.headers
-        else
-          callback err
 
   view: (options, callback) ->
-    # handle view as string without params
-    if typeof(options) == 'string'
-      options = 
-        view: options
-      paramstr = ''
-    else
-      if options.params?
-        paramstr = parseParams(options.params)
-      else paramstr = ''
+    if options.params?
+      paramstr = parseParams(options.params)
+    else paramstr = ''
     request 
       url: @dbroot + '/_design/' + @design + '/_view/' + options.view + paramstr
       method: 'GET'
@@ -75,12 +47,11 @@ class Couch
       (err, res, body) ->
         if !err
           if body.error?
-            err = new Error body.error
-            callback err
+            callback body
           else
             callback null, body.rows
         else
-          callback err
+          callback 'could not connect to database - ' + err
 
   list: (options, callback) ->
     # TODO: list params take no surrounding "" for strings
@@ -157,49 +128,37 @@ class Couch
     return attach
 
   saveAttachment: (options, callback) ->
-    #TODO: it's probably better to use the request module as well
     self = this
+
     doPutRequest = (docid, rev, fileStream, fileName, cb) ->
-      putopts =
-        hostname: self.hostname,
-        port: parseInt(self.port)
-        path: '/' + self.db + '/' + docid + '/' + fileName + '?rev=' + rev
+      dbFileStream = request
         method: 'PUT'
+        url: self.dbroot + '/' + docid + '/' + fileName + '?rev=' + rev
         headers:
           'Content-Type': mime.lookup(fileName)
-      # TODO : throw error if rev check fails
-      putReq = http.request putopts, (res) ->
-        res.setEncoding 'utf8' 
-        res.on 'data', (chunk) ->
-          putRes = JSON.parse(chunk)
-          if putRes.rev?
-            putReq.end()
-            cb null, putRes
+      , (err, res, body) ->
+        cb(null, JSON.parse(body))
 
-      fileStream.pipe(putReq)
+      fileStream.pipe(dbFileStream)
 
     if options.rev?
-      doPutRequest(options.docid, options.rev, options.fileStream, options.fileName, (err, msg) ->
+      doPutRequest(options.docid, options.rev, options.fileStream, options.fileName, (err, data) ->
         if !err
-          callback null, msg
+          callback(null, data)
+        else
+          callback(err)
       )
     else
-      #TODO: throw some errors if anything fails? how about that? could be easier by using request module
       options.fileStream.pause()
-      headopts = 
-        hostname: @hostname
-        port: parseInt(@port)
-        path: '/' + @db + '/' + options.docid
-        method: 'HEAD'
-      headreq = http.request(headopts, (headres) ->
-        rev = headres.headers.etag.slice(1,headres.headers.etag.length-1)
+      request.head(@dbroot + '/' + options.docid, (err, res, body) ->
+        rev = res.headers.etag.slice(1,res.headers.etag.length-1)
         options.fileStream.resume()
-        doPutRequest(options.docid, rev, options.fileStream, options.fileName, (err, msg) ->
+        doPutRequest(options.docid, rev, options.fileStream, options.fileName, (err, data) ->
           if !err
-            callback null, msg
+            callback(null, data)
+          else
+            callback(err)
         )
       )
-      headreq.end()
-
 
 module.exports = Couch
